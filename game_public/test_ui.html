@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .light {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .dark {
+            background-color: #333;
+            color: #f0f0f0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #content {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="light">
+    <h1 id="title">UI Demo</h1>
+    <div>
+        <label for="lang-select">语言:</label>
+        <select id="lang-select">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+        </select>
+        <label for="theme-select">主题:</label>
+        <select id="theme-select">
+            <option value="light">亮色</option>
+            <option value="dark">暗色</option>
+        </select>
+    </div>
+    <div id="content">
+        <button id="toast-btn">显示Toast</button>
+        <button id="confirm-btn">显示确认面板</button>
+        <button id="short-confirm-btn">短确认</button>
+        <button id="options-btn">显示选项面板</button>
+        <button id="few-options-btn">少选项面板</button>
+        <button id="med-options-btn">中等选项面板</button>
+        <button id="short-options-btn">短标题选项</button>
+        <button id="loading-btn">显示加载页面</button>
+        <button id="waiting-btn">显示等待</button>
+        <button id="hide-waiting-btn">隐藏等待</button>
+    </div>
+
+    <script src="ui.js"></script>
+    <script>
+        const ui = new UI({ language: 'zh', theme: 'light' });
+
+        const titleEl = document.getElementById('title');
+        const toastBtn = document.getElementById('toast-btn');
+        const confirmBtn = document.getElementById('confirm-btn');
+        const shortConfirmBtn = document.getElementById('short-confirm-btn');
+        const optionsBtn = document.getElementById('options-btn');
+        const fewOptionsBtn = document.getElementById('few-options-btn');
+        const medOptionsBtn = document.getElementById('med-options-btn');
+        const shortOptionsBtn = document.getElementById('short-options-btn');
+        const loadingBtn = document.getElementById('loading-btn');
+        const langSelect = document.getElementById('lang-select');
+        const themeSelect = document.getElementById('theme-select');
+
+        // 更新界面文本
+        function updateUI() {
+            const isZh = langSelect.value === 'zh';
+            titleEl.textContent = isZh ? 'UI演示' : 'UI Demo';
+            toastBtn.textContent = isZh ? '显示Toast' : 'Show Toast';
+            confirmBtn.textContent = isZh ? '显示确认面板' : 'Show Confirm Panel';
+            shortConfirmBtn.textContent = isZh ? '短确认' : 'Short Confirm';
+            optionsBtn.textContent = isZh ? '显示选项面板' : 'Show Options Panel';
+            fewOptionsBtn.textContent = isZh ? '少选项面板' : 'Few Options Panel';
+            medOptionsBtn.textContent = isZh ? '中等选项面板' : 'Medium Options Panel';
+            shortOptionsBtn.textContent = isZh ? '短标题选项' : 'Short Title Options';
+            loadingBtn.textContent = isZh ? '显示加载页面' : 'Show Loading';
+            document.getElementById('waiting-btn').textContent = isZh ? '显示等待' : 'Show Waiting';
+            document.getElementById('hide-waiting-btn').textContent = isZh ? '隐藏等待' : 'Hidden Waiting';
+            document.querySelector('label[for="lang-select"]').textContent = isZh ? '语言:' : 'Language:';
+            document.querySelector('label[for="theme-select"]').textContent = isZh ? '主题:' : 'Theme:';
+            document.querySelector('#theme-select option[value="light"]').textContent = isZh ? '亮色' : 'Light';
+            document.querySelector('#theme-select option[value="dark"]').textContent = isZh ? '暗色' : 'Dark';
+        }
+
+        langSelect.addEventListener('change', () => {
+            ui.setLanguage(langSelect.value);
+            updateUI();
+        });
+
+        themeSelect.addEventListener('change', () => {
+            const theme = themeSelect.value;
+            ui.setTheme(theme);
+            document.body.className = theme;
+        });
+
+        toastBtn.addEventListener('click', () => {
+            ui.showToast(langSelect.value === 'zh' ? '这是一个Toast消息' : 'This is a Toast message');
+        });
+
+        confirmBtn.addEventListener('click', () => {
+            ui.showConfirmPanel(
+                langSelect.value === 'zh' ? '确认' : 'Confirm',
+                langSelect.value === 'zh' ? '您确定要执行此操作吗？' : 'Are you sure you want to do this?',
+                '⚠️', // 示例emoji
+                (confirmed) => {
+                    ui.showToast(confirmed ? (langSelect.value === 'zh' ? '确认' : 'Confirmed') : (langSelect.value === 'zh' ? '取消' : 'Cancelled'));
+                    return true; // 总是关闭
+                }
+            );
+        });
+
+        shortConfirmBtn.addEventListener('click', () => {
+            ui.showConfirmPanel(
+                '',
+                langSelect.value === 'zh' ? '确认？' : 'Confirm?',
+                null,
+                (confirmed) => {
+                    ui.showToast(confirmed ? (langSelect.value === 'zh' ? '好' : 'OK') : (langSelect.value === 'zh' ? '取消' : 'Cancel'));
+                }
+            );
+        });
+
+        fewOptionsBtn.addEventListener('click', () => {
+            const isZh = langSelect.value === 'zh';
+            ui.showOptionsPanel(
+                isZh ? '选择' : 'Choose',
+                '',
+                [
+                    {text: isZh ? '选项A' : 'Option A'},
+                    {text: isZh ? '选项B' : 'Option B'}
+                ],
+                (result) => {
+                    if (result.cancel) {
+                        ui.showToast(isZh ? '取消' : 'Cancel');
+                    } else {
+                        ui.showToast(`${isZh ? '选' : 'Selected'} ${result.selected.text}`);
+                    }
+                }
+            );
+        });
+
+        medOptionsBtn.addEventListener('click', () => {
+            const isZh = langSelect.value === 'zh';
+            ui.showOptionsPanel(
+                isZh ? '游戏模式' : 'Game Mode',
+                isZh ? '选择您的游戏方式' : 'Choose your game mode',
+                [
+                    {text: isZh ? '单人' : 'Single Player'},
+                    {text: isZh ? '多人' : 'Multiplayer'},
+                    {text: isZh ? '本地' : 'Local'}
+                ],
+                (result) => {
+                    if (result.cancel) {
+                        ui.showToast(isZh ? '取消' : 'Cancel');
+                    } else {
+                        ui.showToast(`${isZh ? '选择' : 'Chose'} ${result.selected.text}`);
+                    }
+                }
+            );
+        });
+
+        shortOptionsBtn.addEventListener('click', () => {
+            const isZh = langSelect.value === 'zh';
+            ui.showOptionsPanel(
+                isZh ? '选' : 'Sel',
+                isZh ? '快选' : 'Quick',
+                [
+                    {text: isZh ? '是' : 'Yes'},
+                    {text: isZh ? '否' : 'No'}
+                ],
+                (result) => {
+                    if (result.cancel) {
+                        ui.showToast(isZh ? '不选' : 'None');
+                    } else {
+                        ui.showToast(result.selected.text);
+                    }
+                }
+            );
+        });
+
+        loadingBtn.addEventListener('click', () => {
+            const isZh = langSelect.value === 'zh';
+            ui.showLoading(15, isZh ? '匹配中...' : 'Matching...', () => {
+                ui.showToast(isZh ? '取消加载' : 'Loading cancelled');
+                ui.hideLoading();
+            });
+        });
+
+        const waitingBtn = document.getElementById('waiting-btn');
+        const hideWaitingBtn = document.getElementById('hide-waiting-btn');
+
+        waitingBtn.addEventListener('click', () => {
+            const isZh = langSelect.value === 'zh';
+            ui.showWaiting(isZh ? '匹配中...' : 'Matching...', 30, () => {
+                ui.showToast(isZh ? '取消等待' : 'Cancel waiting');
+                console.log('退出页面或执行退出方法');
+            });
+        });
+
+        hideWaitingBtn.addEventListener('click', () => {
+            ui.hideWaiting();
+        });
+
+        optionsBtn.addEventListener('click', () => {
+            const options = [];
+            const isZh = langSelect.value === 'zh';
+            for (let i = 0; i < 40; i++) {
+                const opt = {
+                    text: isZh ? `选项${i + 1}` : `Option ${i + 1}`,
+                    desc: isZh ? `这是选项${i + 1}的描述` : `Description for Option ${i + 1}`
+                };
+                if (i % 5 === 0) {
+                    opt.image = ['🎉', '😀', '👍', '🌟', '🔥'][Math.floor(i / 5) % 5];
+                }
+                options.push(opt);
+            }
+            ui.showOptionsPanel(
+                isZh ? '选择选项' : 'Select Option',
+                isZh ? '请选择一个选项' : 'Please select an option',
+                options,
+                (result) => {
+                    if (result.cancel) {
+                        ui.showToast(isZh ? '取消' : 'Cancelled');
+                        return true;
+                    } else {
+                        ui.showToast(`${isZh ? '选择了' : 'Selected'} ${result.selected.text}`);
+                        return true;
+                    }
+                }
+            );
+        });
+
+        updateUI(); // 初始化
+    </script>
+</body>
+</html>
